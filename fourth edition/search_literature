@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import re
 import argparse
 #Crawl the dblp website
-###Modified content: Two new functions for drawing images have been added to the original one here, drawing images separately according to the time of publication and the type of publication
+###Modified content: In the create_map2, a new query has been added to determine whether the number of documents belonging to a certain document type is 0, and the previous existence of 0 will cause id3 to be None in max(ids3, key=compare_ids) and report an error
 
 class DocumentSearch:
     def __init__(self, search_term, file_path, parent=None):
