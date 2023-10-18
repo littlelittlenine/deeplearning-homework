@@ -1,1 +1,147 @@
+import requests
+from bs4 import BeautifulSoup
+import os
+import  urllib
+import matplotlib.pyplot as plt
+import re
+import argparse
+#Crawl the dblp website
+###Modified content: Two new functions for drawing images have been added to the original one here, drawing images separately according to the time of publication and the type of publication
 
+class DocumentSearch:
+    def __init__(self, search_term, file_path, parent=None):
+        self.search_term = search_term
+        self.file_path = file_path
+
+    def open_file(self):
+        os.system(self.file_path)
+    def create_map1(self):
+        list1 = []
+        list2 = []
+        for number in range(2000, 2023+1):
+            count = 0
+            with open(self.file_path, 'r') as file:
+                for line in file:
+                    if "year" in line and str(number) in line:
+                        count += 1
+            list2.append(number)
+            list1.append(count)
+        plt.bar(list2, list1)
+        plt.title("Yearly Data")
+        plt.xlabel("Year")
+        plt.ylabel("Data")
+        plt.show(block=False)
+        plt.pause(5)
+        plt.close()
+        print("图像现实成功")
+    def create_map2(self):
+        url = "https://dblp.org/search?app=OpenSearch&q={searchTerms}"
+        search_url = url.replace("{searchTerms}", self.search_term)
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.200'}
+        response = requests.get(search_url, headers=headers)
+        bs = BeautifulSoup(response.content, "html.parser")
+        table = bs.find(name='nav', attrs={"class": 'header'})
+        item = table.find('a')
+        web_name = str(item['href'])
+        print(web_name)
+        response = requests.get(web_name, headers=headers)
+        bs = BeautifulSoup(response.content, "html.parser")
+        table = bs.find(name='url')
+        web_name2 = table.text
+        response = requests.get(web_name2)
+        html = response.text
+        pattern1 = r'(?<=id=")j(\d+)(?=")'
+        pattern2 = r'(?<=id=")c(\d+)(?=")'
+        pattern3 = r'(?<=id=")i(\d+)(?=")'
+        ids1 = re.findall(pattern1, html)
+        ids2 = re.findall(pattern2, html)
+        ids3 = re.findall(pattern3, html)
+        def compare_ids(id):
+            return int(id)
+        if not ids1:  # 检查ids3是否为空
+            max_id1 = 0
+        else:
+            max_id1 = max(ids1, key=compare_ids)
+        if not ids2:  # 检查ids3是否为空
+            max_id2 = 0
+        else:
+            max_id2 = max(ids2, key=compare_ids)
+        if not ids3:  # 检查ids3是否为空
+            max_id3 = 0
+        else:
+            max_id3 = max(ids3, key=compare_ids)
+        def create_pie_chart(data):
+            labels = ['Journal Articles', 'Conference and Symposium Papers', 'Informal Publications and Other Publications']
+            plt.pie(data, labels=labels, autopct='%1.1f%%')
+            plt.title('Pie Chart')
+            plt.show(block=False)
+            plt.pause(5)
+            plt.close()
+
+        data = [max_id1, max_id2, max_id3]
+        create_pie_chart(data)
+        print("图像显示成功")
+    def search_literature(self):
+        url='https://dblp.org/'
+        headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.200'}
+        response=requests.get(url,headers=headers)
+        bs=BeautifulSoup(response.content,"html.parser")
+        table=bs.find(name='link',attrs={"rel":'search'})
+        web=str(table['href'])
+        #After crawling the DBLP website, find its search function file and replace the search keywords
+        url=web
+        response=requests.get(url,headers=headers)
+        bs=BeautifulSoup(response.content,"html.parser")
+        table=bs.find(name='url',attrs={"type":'text/html'})
+        #if table:
+        #    url_template = str(table['template'])
+        #    print(url_template)
+        #else:
+        #    print("未找到名为'Url'的标签")
+        url_template=str(table['template'])
+
+        search_url = url_template.replace("{searchTerms}", self.search_term)
+        #Continuing to crawl with the new URL is equivalent to searching for the name of the relevant scientist on the page
+        response=requests.get(search_url,headers=headers)
+        if response:
+            print("找到了")
+        bs=BeautifulSoup(response.content,"html.parser")
+        table=bs.find(name='nav',attrs={"class":'header'})
+        item=table.find('a')
+        #Click on the scientist's name to go to the relevant page
+        web_name=str(item['href'])
+        print(web_name)
+        response=requests.get(web_name,headers=headers)
+        bs1=BeautifulSoup(response.content,"html.parser")
+        print(bs1)
+        table=bs1.find(name='url')
+        web_name2=table.text
+        print(web_name2)
+        response=requests.get(web_name2,headers=headers)
+        bs=BeautifulSoup(response.content,"html.parser")
+        table=bs.find(name='nav',attrs={"class":'head'})
+        sub_tags=table.find_all(name='div',attrs={"class":'head'})
+        target_element = "bibtex"
+        for sub_tag in sub_tags:
+            if target_element in str(sub_tag):
+                url = sub_tag.find('a')['href']
+                print(url)
+                break
+        response=requests.get(url,headers=headers)
+        bs=BeautifulSoup(response.content,"html.parser")
+        sub_tags=bs.find_all(name='p')
+        target_element = ".bib"
+        for sub_tag in sub_tags:
+            if target_element in str(sub_tag):
+                url = sub_tag.find('a')['href']
+                print(url)
+
+        response = requests.get(url)
+        if response.status_code == 200:
+
+            file_content=response.content
+            with open(self.file_path, 'wb') as file:
+                file.write(file_content)
+            print("文件保存成功！")
+        else:
+            print("文件下载失败！")
