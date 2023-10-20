@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 import re
 import argparse
 #Crawl the dblp website
-###Modified content: 
+###Modified content: Set the URL initially to https://dblp.org/search?app=OpenSearch&q={searchTerms} instead of the DBLP's initial official website to speed things up, although not much
+
 class DocumentSearch:
     def __init__(self, search_term, file_path, parent=None):
         self.search_term = search_term
@@ -76,21 +77,9 @@ class DocumentSearch:
         create_pie_chart(data)
         print("图像显示成功")
     def search_literature(self):
-        url='https://dblp.org/'
+        url='https://dblp.org/search?app=OpenSearch&q={searchTerms}'
         headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.200'}
-        response=requests.get(url,headers=headers)
-        bs=BeautifulSoup(response.content,"html.parser")
-        table=bs.find(name='link',attrs={"rel":'search'})
-        web=str(table['href'])
-        #After crawling the DBLP website, find its search function file and replace the search keywords
-        url=web
-        response=requests.get(url,headers=headers)
-        bs=BeautifulSoup(response.content,"html.parser")
-        table=bs.find(name='url',attrs={"type":'text/html'})
-        url_template=str(table['template'])
-        print(url_template)
-        search_url = url_template.replace("{searchTerms}", self.search_term)
-        print(search_url)
+        search_url = url.replace("{searchTerms}", self.search_term)
         #Continuing to crawl with the new URL is equivalent to searching for the name of the relevant scientist on the page
         response=requests.get(search_url,headers=headers)
         if response:
@@ -128,3 +117,4 @@ class DocumentSearch:
             print("文件保存成功！")
         else:
             print("文件下载失败！")
+
