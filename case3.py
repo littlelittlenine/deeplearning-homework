@@ -1,8 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-
-#爬取dblp网站
+#Explanation: This version is the version I originally completed in 10.1, but it simply implements the function, and does not combine with the UI
+#Crawl the dblp website
 
 url='https://dblp.org/'
 headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.200'}
@@ -11,7 +11,7 @@ bs=BeautifulSoup(response.content,"html.parser")
 table=bs.find(name='link',attrs={"rel":'search'})
 web=str(table['href'])
 #print(web)
-#######爬取DBLP网站后，找到其搜索功能文件，替换搜索关键词
+#######After crawling the DBLP website, find its search function file and replace the search keywords
 url=web
 #print(url)
 response=requests.get(url,headers=headers)
@@ -26,14 +26,13 @@ url_template=str(table['template'])
 #print(url_template)
 search_term="Ya-Qin Zhang"
 search_url = url_template.replace("{searchTerms}", search_term)
-####用得到的新网址继续爬取，相当于你在网页中搜索了相关科学家姓名
+####Continuing to crawl with the new URL is equivalent to searching for the name of the relevant scientist on the page
 response=requests.get(search_url,headers=headers)
 if response:
     print("找到了")
 bs=BeautifulSoup(response.content,"html.parser")
 table=bs.find(name='nav',attrs={"class":'header'})
 item=table.find('a')
-####进入准确查找网页
 web_name=str(item['href'])
 print(web_name)
 response=requests.get(web_name,headers=headers)
