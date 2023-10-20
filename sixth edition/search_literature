@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import re
 import argparse
 #Crawl the dblp website
-###Modified content: Two new functions for drawing images have been added to the original one here, drawing images separately according to the time of publication and the type of publication
-
+###Modified content: 
 class DocumentSearch:
     def __init__(self, search_term, file_path, parent=None):
         self.search_term = search_term
